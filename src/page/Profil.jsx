@@ -12,6 +12,9 @@ const Profil = () => {
         <div>
             <h2>Profil de l'utilisateur</h2>
             <p>
+                <strong>Nom :</strong> {user.id}
+            </p>
+            <p>
                 <strong>Nom :</strong> {user.Nom}
             </p>
             <p>

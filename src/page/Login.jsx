@@ -27,7 +27,7 @@ const LoginForm = () => {
                 console.log("Connexion réussie:", data);
 
                 // Utilisez la fonction login du contexte pour stocker le token et les informations utilisateur
-                login(data.token, { email });
+                login(data.token, data.user);
 
                 // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
                 navigate("/");

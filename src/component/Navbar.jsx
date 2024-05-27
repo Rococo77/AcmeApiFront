@@ -42,6 +42,12 @@ const Navbar = () => {
                     {token ? (
                         <>
                             <li className="mx-4">
+                                <Link to="/">Accueil</Link>
+                            </li>
+                            <li className="mx-4">
+                                <Link to="/menu">Toutes les régions</Link>
+                            </li>
+                            <li className="mx-4">
                                 {regions.length > 0 ? (
                                     <ul className="flex flex-row">
                                         {regions.map((region) => (

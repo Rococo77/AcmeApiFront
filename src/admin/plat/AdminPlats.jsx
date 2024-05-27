@@ -68,7 +68,9 @@ const AdminPlats = () => {
               ))}
             </tbody>
           </table>
-
+          <Link to="/admin/plats/ajouter" className="text-green-600 hover:text-green-900 ml-4">
+        Ajouter un plat
+      </Link>
         </div>
       </div>
     </div>

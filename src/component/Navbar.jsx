@@ -35,13 +35,13 @@ const Navbar = () => {
             )}
           </li>
           <li className="mx-4">
-          <Link to="/cart">Panier</Link>
+          <Link to="/panier">Panier</Link>
           </li>
           <li className='mx-4'>
           <Link to="/contact">Contact</Link>
           </li>
           <li className='mx-4'>
-          <Link to="/profil">Profil</Link>
+          <Link to="/login">Profil</Link>
           </li>
           <li className='mx-4'>
           <Link to="/admin/plats">AdminPlat</Link>

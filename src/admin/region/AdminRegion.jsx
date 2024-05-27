@@ -65,6 +65,9 @@ const AdminRegion = () => {
               ))}
             </tbody>
           </table>
+          <Link to="/admin/regions/ajouter" className="text-green-600 hover:text-green-900 ml-4">
+        Ajouter un region
+      </Link>
         </div>
       </div>
     </div>

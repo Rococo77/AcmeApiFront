@@ -1,17 +1,17 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthContext from "../AuthContext";
+import { AuthContext } from "../AuthContext"; // Assurez-vous que le chemin est correct
+
 const LoginForm = () => {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const { setAuthToken } = useContext(AuthContext);
+    const [error, setError] = useState("");
+
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const payload = { username, password };
-        alert(`JSON envoyé : ${JSON.stringify(payload)}`);
 
         try {
             const response = await fetch("http://192.168.1.120:8000/api/login_check", {
@@ -19,21 +19,26 @@ const LoginForm = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify({ username: email, password }), // Assurez-vous que les clés correspondent aux noms attendus par votre API
             });
 
             if (response.ok) {
                 const data = await response.json();
-                alert(`Connexion réussie ! Réponse de l'API : ${JSON.stringify(data)}`);
-                setAuthToken(data.token);
-                localStorage.setItem("authToken", data.token); // Stocker le token dans le localStorage
+                console.log("Connexion réussie:", data);
+
+                // Utilisez la fonction login du contexte pour stocker le token et les informations utilisateur
+                login(data.token, { email });
+
+                // Rediriger l'utilisateur vers la page d'accueil ou une autre page protégée
                 navigate("/");
             } else {
                 const errorData = await response.json();
-                alert(`Erreur lors de la connexion : ${JSON.stringify(errorData)}`);
+                setError(errorData.message || "Erreur lors de la connexion");
+                console.error("Erreur lors de la connexion:", response.status, errorData.message);
             }
         } catch (error) {
-            alert(`Erreur réseau : ${error.message}`);
+            setError("Erreur réseau");
+            console.error("Erreur réseau:", error);
         }
     };
 
@@ -41,12 +46,13 @@ const LoginForm = () => {
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100 w-screen">
             <form onSubmit={handleSubmit} className="p-6 bg-white rounded shadow-md">
                 <h2 className="text-lg font-semibold text-gray-700 text-center">Connexion</h2>
+                {error && <p className="text-red-500 text-center">{error}</p>}
                 <div className="space-y-4 mt-6">
                     <input
                         type="email"
                         name="email"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         placeholder="Email"
                         required
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

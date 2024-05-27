@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
-import AuthContext from "../AuthContext";
+import { AuthContext } from "../AuthContext";
 const Menu = () => {
     const [recipes, setRecipes] = useState([]);
-    const { authToken } = useContext(AuthContext);
+    const { token } = useContext(AuthContext); // Utilisez le token d'authentification
 
     useEffect(() => {
         const apiUrl = "http://192.168.1.120:8000/api/admin/recipes/";
@@ -13,7 +13,7 @@ const Menu = () => {
                 console.log(`Fetching from ${apiUrl}`);
                 const response = await fetch(apiUrl, {
                     headers: {
-                        Authorization: `Bearer ${authToken}`,
+                        Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
                 });
@@ -30,10 +30,10 @@ const Menu = () => {
             }
         };
 
-        if (authToken) {
+        if (token) {
             fetchRecipes();
         }
-    }, [authToken]);
+    }, [token]);
 
     return (
         <div className="mx-0 py-8 w-screen">

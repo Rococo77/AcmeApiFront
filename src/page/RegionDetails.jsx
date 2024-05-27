@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import AuthContext from "../AuthContext";
+import { AuthContext } from "../AuthContext";
 const RegionDetails = () => {
     const [region, setRegion] = useState({});
     const { id } = useParams();
-    const { authToken } = useContext(AuthContext); // Utilisez le token d'authentification
+    const { token } = useContext(AuthContext); // Utilisez le token d'authentification
 
     useEffect(() => {
         const fetchRegionDetails = async () => {
@@ -14,7 +14,7 @@ const RegionDetails = () => {
                 // Récupération des détails de la région
                 const regionResponse = await fetch(regionUrl, {
                     headers: {
-                        Authorization: `Bearer ${authToken}`, // Ajoutez le token d'authentification
+                        Authorization: `Bearer ${token}`, // Ajoutez le token d'authentification
                         "Content-Type": "application/json",
                     },
                 });
@@ -30,10 +30,10 @@ const RegionDetails = () => {
             }
         };
 
-        if (authToken) {
+        if (token) {
             fetchRegionDetails();
         }
-    }, [id, authToken]);
+    }, [id, token]);
 
     if (!region || Object.keys(region).length === 0) {
         return <div>Chargement...</div>;

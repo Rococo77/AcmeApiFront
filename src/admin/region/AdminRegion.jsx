@@ -1,23 +1,29 @@
 // src/components/AdminRegion.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
 
 const AdminRegion = () => {
   const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const {token} = useContext(AuthContext);
 
   useEffect(() => {
-    fetch('http://192.168.1.31:8000/admin/regions/')
-      .then((response) => response.json())
-      .then((data) => {
-        setRegions(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Erreur lors de la récupération des régions:', error);
-        setLoading(false);
-      });
-  }, []);
+    api.get('/admin/regions/', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
+      },
+    })
+    .then((response) => {
+      setRegions(response.data); // Accédez directement à response.data
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error('Erreur lors de la récupération des régions:', error);
+      setLoading(false);
+    });
+  }, [token]);
 
   if (loading) {
     return <div>Chargement des régions...</div>;

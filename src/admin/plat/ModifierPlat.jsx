@@ -1,42 +1,55 @@
 // src/components/ModifierPlat.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
+
 
 const ModifierPlat = () => {
   const [plat, setPlat] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const {token} = useContext(AuthContext);
 
   useEffect(() => {
-    fetch(`http://192.168.1.31:8000/admin/recipes/${id}`)
-      .then((response) => response.json())
-      .then((data) => setPlat(data));
-  }, [id]);
-
-  const handleUpdate = (event) => {
-    event.preventDefault();
-    // Logique pour envoyer les données mises à jour à l'API
-    fetch(`http://192.168.1.31:8000/admin/recipes/${id}`, {
-      method: 'PUT',
+    api.get(`/admin/recipes/${id}`, {
       headers: {
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
       },
-      body: JSON.stringify(plat),
     })
     .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      navigate('/admin/plats'); // Rediriger vers la liste des plats après la mise à jour
+      setPlat(response.data); // Accédez directement à response.data
     })
     .catch((error) => {
-      console.error('Failed to update the plat:', error);
+      console.error('Erreur lors de la récupération du plat:', error);
     });
+  }, [id, token]);
+
+  const handleUpdate = async (event) => {
+    event.preventDefault();
+    try {
+      // Utilisez Axios pour envoyer une requête PUT
+      const response = await api.put(`/admin/recipes/${id}`, plat, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Incluez le token d'authentification
+        }
+      });
+
+      if (response.status === 200) { // Vérifiez si le statut est 200 (OK)
+        navigate('/admin/plats'); // Rediriger vers la liste des plats après la mise à jour
+      } else {
+        throw new Error(`Erreur lors de la mise à jour du plat: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Failed to update the plat:', error);
+    }
   };
 
   if (!plat) {
-    return <div className='w-screen'>Chargement...</div>;
+    return <div>Chargement...</div>;
   }
+    
 
   return (
     <div className="container mx-auto mt-10 w-screen">

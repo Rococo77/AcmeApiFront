@@ -1,38 +1,46 @@
 // src/components/ModifierRegion.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useContext} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
 
 const ModifierRegion = () => {
   const [region, setRegion] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const {token} = useContext(AuthContext);
 
   useEffect(() => {
-    fetch(`http://192.168.1.31:8000/admin/regions/${id}`)
-      .then((response) => response.json())
-      .then((data) => setRegion(data));
-  }, [id]);
-
-  const handleUpdate = (event) => {
-    event.preventDefault();
-    // Logique pour envoyer les données mises à jour à l'API
-    fetch(`http://192.168.1.31:8000/admin/regions/${id}`, {
-      method: 'PUT',
+    api.get(`/admin/regions/${id}`, {
       headers: {
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
       },
-      body: JSON.stringify(region),
     })
     .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      navigate('/admin/regions'); // Rediriger vers la liste des régions après la mise à jour
+      setRegion(response.data); // Accédez directement à response.data
     })
     .catch((error) => {
-      console.error('Failed to update the region:', error);
+      console.error('Erreur lors de la récupération de la région:', error);
     });
+  }, [id, token]);
+  
+  const handleUpdate = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await api.put(`/admin/regions/${id}`, region, {
+        headers: {
+          'Content-Type': 'application/json', // Assurez-vous que le type de contenu est correct
+          'Authorization': `Bearer ${token}`
+      }});
+  
+      // Avec axios, pas besoin de vérifier response.ok
+      navigate('/admin/regions'); // Rediriger vers la liste des régions après la mise à jour
+    }
+    catch(error) {
+      console.error('Failed to update the region:', error.response ? error.response.data : error);
+    }
   };
+  
 
   if (!region) {
     return <div>Chargement...</div>;

@@ -1,22 +1,31 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate  } from 'react-router-dom';
+import { useContext } from 'react';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
 
 const SupprimerPlat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const {token} = useContext(AuthContext);
 
-  const handleDelete = () => {
-    fetch(`http://192.168.1.31:8000/admin/recipes/${id}`, {
-      method: 'DELETE',
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+
+  const handleDelete = async () => {
+    try {
+      // Utilisez Axios pour envoyer une requête DELETE
+      const response = await api.delete(`/admin/recipes/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}` // Incluez le token d'authentification
+        }
+      });
+
+      if (response.status === 200) { // Vérifiez si le statut est 200 (OK)
+        navigate('/admin/plats'); // Rediriger vers la liste des plats après la suppression
+      } else {
+        throw new Error(`Erreur lors de la suppression du plat: ${response.status}`);
       }
-      navigate('/admin/plats');
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error('Failed to delete the plat:', error);
-    });
+    }
   };
 
   return (

@@ -1,29 +1,28 @@
 // src/components/PlatsTendances.jsx
-import  { useState, useEffect } from 'react';
+import  { useState, useEffect, useContext } from 'react';
+import api from '../api/api';
+import {AuthContext} from '../AuthContext';
 
 const PlatsTendances = () => {
   const [plats, setPlats] = useState([]);
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
-    // Remplacez l'URL par votre point de terminaison API pour les plats
-    const apiUrl = 'http://192.168.1.31:8000/admin/recipes/';
-
-    fetch(apiUrl)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Récupérez les trois premiers plats
-        const troisPremiersPlats = data.slice(0,3);
-        setPlats(troisPremiersPlats);
-      })
-      .catch(error => {
-        console.error('Erreur:', error);
-      });
-  }, []);
+    
+    api.get('/admin/recipes/', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
+      },
+    })
+    .then((response) => {
+      // Accédez directement à response.data
+      const troisPremiersPlats = response.data.slice(0, 3);
+      setPlats(troisPremiersPlats);
+    })
+    .catch((error) => {
+      console.error('Erreur lors de la récupération des plats:', error);
+    });
+  }, [token]);
 
   return (
     <div className="flex overflow-x-auto space-x-4  justify-center">

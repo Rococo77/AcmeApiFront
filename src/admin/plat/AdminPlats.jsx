@@ -1,22 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
 
 const AdminPlats = () => {
   const [plats, setPlats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const {token} = useContext(AuthContext)
 
   useEffect(() => {
-    fetch('http://192.168.1.31:8000/admin/recipes/')
-      .then((response) => response.json())
-      .then((data) => {
-        setPlats(data);
-        setLoading(false);
+   api.get('/admin/recipes/', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
+      },
+    })
+    .then((response) => {
+      setPlats(response.data); // Accédez directement à response.data
+      setLoading(false);
       })
       .catch((error) => {
         console.error('Erreur lors de la récupération des plats:', error);
         setLoading(false);
       });
-  }, []);
+  }, [token]);
 
   if (loading) {
     return <div>Chargement des plats...</div>;

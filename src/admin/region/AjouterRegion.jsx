@@ -1,10 +1,13 @@
-import  { useState } from 'react';
+import  { useState, useContext } from 'react';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
 
 const AjouterRegion = () => {
   const [regionData, setRegionData] = useState({
     nom: '',
     description: ''
   });
+  const {token} = useContext(AuthContext) 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -16,26 +19,21 @@ const AjouterRegion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const response = await fetch('http://192.168.1.31:8000/api/admin/regions/', {
-        method: 'POST',
+      const response = await api.post('/admin/regions/', regionData, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(regionData)
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Région créée avec succès:', data);
-        // Vous pouvez ajouter ici une redirection vers la liste des régions ou une confirmation d'ajout
-      } else {
-        console.error('Erreur lors de la création de la région:', response.status);
-        // Gérez l'erreur (affichage d'un message d'erreur, etc.)
-      }
+  
+      // Avec axios, pas besoin de vérifier response.ok
+      console.log('Région créée avec succès:', response.data);
+      // Vous pouvez ajouter ici une redirection vers la liste des régions ou une confirmation d'ajout
     } catch (error) {
-      console.error('Erreur réseau:', error);
+      // Gérez les erreurs d'axios
+      console.error('Erreur lors de la création de la région:', error.response ? error.response.status : '', error.response ? error.response.data : error);
       // Gérez l'erreur (affichage d'un message d'erreur, etc.)
     }
   };

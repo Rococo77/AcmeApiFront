@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-
+import { useState, useEffect, useContext } from 'react';
+import api from '../../api/api';
+import {AuthContext} from '../../AuthContext';
 const AjouterPlat = () => {
   const [platData, setPlatData] = useState({
     nom: '',
@@ -10,6 +11,7 @@ const AjouterPlat = () => {
     region: '', // Remplacez par l'ID de la région appropriée
     ingredients: [] // Remplacez par les ingrédients appropriés
   });
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,43 +23,55 @@ const AjouterPlat = () => {
 
   const [ingredientsList, setIngredientsList] = useState([]);
   const [regionsList, setRegionsList] = useState([]);
+  const {token} = useContext(AuthContext)
 
   useEffect(() => {
     // Récupérez la liste des ingrédients depuis l'API
-    fetch('http://192.168.1.31:8000/api/admin/ingredients')
-      .then(response => response.json())
-      .then(data => setIngredientsList(data));
-
+    api.get('/admin/ingredients/', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
+      },
+    })
+      .then(response => {
+       setIngredientsList(response.data);
+      })
+      .catch(error => {
+        console.error('Erreur lors de la récupération des ingrédients:', error);
+      });
     // Récupérez la liste des régions depuis l'API
-    fetch('http://192.168.1.31:8000/api/admin/regions')
-      .then(response => response.json())
-      .then(data => setRegionsList(data));
-  }, []);
+    api.get('/admin/regions/', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Utilisez le token d'AuthContext
+      },
+    })
+      .then(response => {
+        setRegionsList(response.data);
+      })
+      .catch(error => {
+        console.error('Erreur lors de la récupération des régions:', error);
+      });
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://192.168.1.31:8000/admin/recipes/', {
-        method: 'POST',
+      const response = await api.post('admin/recipes/', platData, {
+
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(platData)
+        
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Plat créé avec succès:', data);
+     
+        console.log('Plat créé avec succès:', response.data);
         // Vous pouvez ajouter ici une redirection vers la liste des plats ou une confirmation d'ajout
-      } else {
-        console.error('Erreur lors de la création du plat:', response.status);
+      } catch (error) {
+        console.error('Erreur lors de la création du plat:', error.response ? error.response.status : '', error.response ? error.response.data : error);
         // Gérez l'erreur (affichage d'un message d'erreur, etc.)
       }
-    } catch (error) {
-      console.error('Erreur réseau:', error);
-      // Gérez l'erreur (affichage d'un message d'erreur, etc.)
-    }
   };
 
   return (
@@ -82,7 +96,7 @@ const AjouterPlat = () => {
         </div>
         <div className="mb-4">
           <label htmlFor="allergen" className="block font-medium">Allergènes</label>
-          <select id="ingredients" name="ingredients" value={platData.ingredients} onChange={handleInputChange} className="w-full border rounded-md p-2">
+          <select multiple id="ingredients" name="ingredients" value={platData.ingredients} onChange={handleInputChange} className="w-full border rounded-md p-2">
             {ingredientsList.map(ingredient => (
               <option key={ingredient.id} value={ingredient.id}>{ingredient.nom}</option>
             ))}

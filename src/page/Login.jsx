@@ -26,7 +26,7 @@ const LoginForm = () => {
                 console.log("Connexion réussie:", response.data);
                 login(token, response.data.user); // Supposant que la fonction login prend le token et les données utilisateur
                 setToken(token);
-                localStorage.setItem("authToken", token); // Stocker le token dans le localStorage
+                localStorage.setItem("token", token); // Stocker le token dans le localStorage
                 navigate("/");
             } else {
                 // Cette partie du code ne sera jamais atteinte car axios lance une exception pour les statuts d'erreur

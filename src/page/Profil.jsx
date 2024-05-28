@@ -1,13 +1,13 @@
 import  { useContext } from "react";
 import { AuthContext } from "../AuthContext";
 const Profil = () => {
-    const { user } = useContext(AuthContext);
-    const { logout } = useContext(AuthContext); // Utilisez le token et la fonction de déconnexion
+    const { user, logout } = useContext(AuthContext);
+     // Utilisez le token et la fonction de déconnexion
 
     if (!user) {
         return <p>Chargement des informations utilisateur...</p>;
     }
-
+    
     return (
         <div>
             <h2>Profil de l&apos;utilisateur</h2>

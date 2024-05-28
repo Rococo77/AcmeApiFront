@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+
+import api from "./api/api";
 
 export const AuthContext = createContext();
 
@@ -26,9 +27,11 @@ export const AuthProvider = ({ children }) => {
     const fetchUserData = async (token) => {
         try {
             // Utilisez axios pour envoyer une requête GET
-            const response = await axios.get("/admin/user/me", {
+            const response = await api.get("/admin/user/me", {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    
+                    Authorization: `Bearer ${token}`,
+                    "Accept": "application/json"
                 },
             });
 
@@ -57,5 +60,5 @@ export const AuthProvider = ({ children }) => {
         navigate("/login");
     };
 
-    return <AuthContext.Provider value={{ token, setToken, user, login, logout }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ token, setToken, user, setUser, login, logout }}>{children}</AuthContext.Provider>;
 };

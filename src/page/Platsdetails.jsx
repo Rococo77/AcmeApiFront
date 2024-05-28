@@ -10,8 +10,9 @@ const RecipeDetails = () => {
     const [quantity, setQuantity] = useState(1);
     const { id } = useParams();
     const { token, user } = useContext(AuthContext);
-  
+    console.log("user :" , user)
     useEffect(() => {
+        
       const fetchRecipe = async () => {
           try {
               // Utilisez axios pour envoyer une requête GET
@@ -39,7 +40,7 @@ const RecipeDetails = () => {
   const addToCart = async () => {
       try {
           // Utilisez axios pour envoyer une requête POST
-          const response = await api.post(`/admin/panier/user/${user.id}/`, {
+          const response = await api.post(`/admin/panier/user/${user.data.id}/`, {
               items: [
                   {
                       platId: id,
@@ -69,7 +70,7 @@ const RecipeDetails = () => {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 min-h-screen">
         <div className="flex flex-col items-center">
             <div className="bg-white shadow-md rounded-lg p-4">
                 <h1 className="text-3xl font-bold text-gray-800 mb-4">{recipe.Nom}</h1>

@@ -8,7 +8,7 @@ const UserPanierDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { user, token } = useContext(AuthContext);
-    const userId = user.id;
+    const userId = user.data.id;
     
 
     useEffect(() => {
@@ -22,9 +22,7 @@ const UserPanierDetails = () => {
                     },
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-                }
+                
                 setPanier(response.data);
             } catch (error) {
                 setError(error.message);
@@ -47,7 +45,7 @@ const UserPanierDetails = () => {
     }
 
     return (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-8 min-h-screen">
             <div className="flex flex-col items-center">
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <h1 className="text-3xl font-bold text-gray-800 mb-4">Détails du Panier</h1>

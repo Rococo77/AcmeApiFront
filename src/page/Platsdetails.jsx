@@ -4,11 +4,12 @@ import { AuthContext } from "../AuthContext";
 
 const RecipeDetails = () => {
     const [recipe, setRecipe] = useState(null);
+    const [ingredients, setIngredients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const { id } = useParams();
-    const { token, user } = useContext(AuthContext); // Assurez-vous que le token et l'utilisateur sont disponibles
+    const { token, user } = useContext(AuthContext);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -35,8 +36,30 @@ const RecipeDetails = () => {
 
         if (token) {
             fetchRecipe();
+            fetchIngredients();
         }
     }, [id, token]);
+
+    const fetchIngredients = async () => {
+        try {
+            const apiUrl = `http://192.168.1.120:8000/api/admin/recipe/${id}/compo`;
+            const response = await fetch(apiUrl, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ingredients: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            setIngredients(data);
+        } catch (error) {
+            setError(error.message);
+        }
+    };
 
     const addToCart = async () => {
         try {
@@ -101,6 +124,18 @@ const RecipeDetails = () => {
                         Ajouter au panier
                     </button>
                     {recipe.region && <p className="text-gray-700 mt-4">Region: {recipe.region.Nom}</p>}
+                    <div className="mt-4">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Ingrédients:</h2>
+                        {ingredients.length > 0 ? (
+                            <ul className="list-disc list-inside">
+                                {ingredients.map((ingredient) => (
+                                    <li key={ingredient.id}>{ingredient.Nom}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Aucun ingrédient trouvé.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const AdminPlats = () => {
-    const [plats, setPlats] = useState([]);
+const AdminIngredient = () => {
+    const [ingredients, setIngredients] = useState([]);
     const [loading, setLoading] = useState(true);
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token"); // Récupère le token depuis le stockage local (ou une autre méthode que vous utilisez)
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetch("http://192.168.1.120:8000/api/admin/recipes/", {
+        fetch("http://192.168.1.120:8000/api/admin/ingredients/", {
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`, // Ajoute le token à l'en-tête
                 "Content-Type": "application/json",
             },
         })
@@ -20,20 +21,20 @@ const AdminPlats = () => {
                 return response.json();
             })
             .then((data) => {
-                setPlats(data);
+                setIngredients(data);
                 setLoading(false);
             })
             .catch((error) => {
-                console.error("Erreur lors de la récupération des plats:", error);
+                console.error("Erreur lors de la récupération des ingrédients:", error);
                 setLoading(false);
             });
     }, [token]);
 
     const handleDelete = (id) => {
-        fetch(`http://192.168.1.120:8000/api/admin/recipes/${id}`, {
+        fetch(`http://192.168.1.120:8000/api/admin/ingredients/${id}`, {
             method: "DELETE",
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`, // Ajoute le token à l'en-tête
                 "Content-Type": "application/json",
             },
         })
@@ -41,21 +42,22 @@ const AdminPlats = () => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
-                setPlats(plats.filter((plat) => plat.id !== id));
+                // Met à jour l'état local pour refléter la suppression
+                setIngredients(ingredients.filter((ingredient) => ingredient.id !== id));
             })
             .catch((error) => {
-                console.error("Failed to delete the plat:", error);
+                console.error("Failed to delete the ingredient:", error);
             });
     };
 
     if (loading) {
-        return <div>Chargement des plats...</div>;
+        return <div>Chargement des ingrédients...</div>;
     }
 
     return (
         <div className="flex justify-center mt-10 w-screen">
             <div className="w-full max-w-6xl">
-                <h1 className="text-2xl font-bold text-center mb-6">Gestion des Plats</h1>
+                <h1 className="text-2xl font-bold text-center mb-6">Gestion des Ingrédients</h1>
                 <div className="overflow-x-auto">
                     <table className="min-w-full leading-normal">
                         <thead>
@@ -63,26 +65,18 @@ const AdminPlats = () => {
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Nom
                                 </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Prix Unit
-                                </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Stock Quantité
-                                </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {plats.map((plat) => (
-                                <tr key={plat.id}>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{plat.Nom}</td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{plat.PrixUnit}</td>
-                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{plat.StockQtt}</td>
+                            {ingredients.map((ingredient) => (
+                                <tr key={ingredient.id}>
+                                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{ingredient.Nom}</td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <Link to={`/admin/plats/modifier/${plat.id}`} className="text-blue-600 hover:text-blue-900">
+                                        <Link to={`/admin/ingredients/modifier/${ingredient.id}`} className="text-blue-600 hover:text-blue-900">
                                             Modifier
                                         </Link>
-                                        <button onClick={() => handleDelete(plat.id)} className="text-red-600 hover:text-red-900 ml-4">
+                                        <button onClick={() => handleDelete(ingredient.id)} className="text-red-600 hover:text-red-900 ml-4">
                                             Supprimer
                                         </button>
                                     </td>
@@ -90,8 +84,8 @@ const AdminPlats = () => {
                             ))}
                         </tbody>
                     </table>
-                    <Link to="/admin/plats/ajouter" className="text-green-600 hover:text-green-900 ml-4">
-                        Ajouter un plat
+                    <Link to="/admin/ingredients/ajouter" className="text-green-600 hover:text-green-900 ml-4">
+                        Ajouter un ingrédient
                     </Link>
                 </div>
             </div>
@@ -99,4 +93,4 @@ const AdminPlats = () => {
     );
 };
 
-export default AdminPlats;
+export default AdminIngredient;

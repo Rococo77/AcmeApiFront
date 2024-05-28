@@ -1,107 +1,231 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AjouterPlat = () => {
-  const [platData, setPlatData] = useState({
-    nom: '',
-    description: '',
-    prix_unit: 0,
-    stock_qtt: 0,
-    allergen: '',
-    region: '', // Remplacez par l'ID de la région appropriée
-    ingredients: [] // Remplacez par les ingrédients appropriés
-  });
+    const [plat, setPlat] = useState({
+        nom: "",
+        description: "",
+        prix_unit: "",
+        stock_qtt: "",
+        peremption_date: "",
+        allergen: "",
+        region: "",
+        ingredients: [],
+    });
+    const [regions, setRegions] = useState([]);
+    const [ingredients, setIngredients] = useState([]);
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setPlatData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
+    useEffect(() => {
+        fetch("http://192.168.1.120:8000/api/admin/regions/", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => setRegions(data));
 
-  const [ingredientsList, setIngredientsList] = useState([]);
-  const [regionsList, setRegionsList] = useState([]);
+        fetch("http://192.168.1.120:8000/api/admin/ingredients/", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => setIngredients(data));
+    }, [token]);
 
-  useEffect(() => {
-    // Récupérez la liste des ingrédients depuis l'API
-    fetch('http://192.168.1.31:8000/api/admin/ingredients')
-      .then(response => response.json())
-      .then(data => setIngredientsList(data));
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const newPlat = {
+            ...plat,
+            region: { id: plat.region },
+            ingredients: plat.ingredients.map((id) => ({ id })),
+        };
 
-    // Récupérez la liste des régions depuis l'API
-    fetch('http://192.168.1.31:8000/api/admin/regions')
-      .then(response => response.json())
-      .then(data => setRegionsList(data));
-  }, []);
+        console.log("Submitting plat:", newPlat); // Debug log
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+        fetch("http://192.168.1.120:8000/api/admin/recipes/", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newPlat),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Successfully created plat:", data); // Debug log
+                navigate("/admin/plats");
+            })
+            .catch((error) => {
+                console.error("Failed to create the plat:", error);
+            });
+    };
 
-    try {
-      const response = await fetch('http://192.168.1.31:8000/admin/recipes/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(platData)
-      });
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setPlat((prevPlat) => ({
+            ...prevPlat,
+            [name]: value,
+        }));
+    };
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Plat créé avec succès:', data);
-        // Vous pouvez ajouter ici une redirection vers la liste des plats ou une confirmation d'ajout
-      } else {
-        console.error('Erreur lors de la création du plat:', response.status);
-        // Gérez l'erreur (affichage d'un message d'erreur, etc.)
-      }
-    } catch (error) {
-      console.error('Erreur réseau:', error);
-      // Gérez l'erreur (affichage d'un message d'erreur, etc.)
-    }
-  };
+    const handleIngredientsChange = (e) => {
+        const { options } = e.target;
+        const selectedIngredients = [];
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+                selectedIngredients.push(options[i].value);
+            }
+        }
+        setPlat((prevPlat) => ({
+            ...prevPlat,
+            ingredients: selectedIngredients,
+        }));
+    };
 
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold text-center mb-6">Ajouter un Plat</h1>
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-        <div className="mb-4">
-          <label htmlFor="nom" className="block font-medium">Nom du Plat</label>
-          <input type="text" id="nom" name="nom" value={platData.nom} onChange={handleInputChange} className="w-full border rounded-md p-2" />
+    return (
+        <div className="container mx-auto mt-10 w-screen">
+            <h1 className="text-2xl font-bold text-center mb-6">Ajouter un Plat</h1>
+            <form className="w-full max-w-lg mx-auto" onSubmit={handleSubmit}>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nom">
+                        Nom
+                    </label>
+                    <input
+                        type="text"
+                        id="nom"
+                        name="nom"
+                        value={plat.nom}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+                        Description
+                    </label>
+                    <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        value={plat.description}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="prix_unit">
+                        Prix Unitaire
+                    </label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        id="prix_unit"
+                        name="prix_unit"
+                        value={plat.prix_unit}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="stock_qtt">
+                        Quantité en Stock
+                    </label>
+                    <input
+                        type="number"
+                        id="stock_qtt"
+                        name="stock_qtt"
+                        value={plat.stock_qtt}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="peremption_date">
+                        Date de Péremption
+                    </label>
+                    <input
+                        type="date"
+                        id="peremption_date"
+                        name="peremption_date"
+                        value={plat.peremption_date}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="allergen">
+                        Allergène
+                    </label>
+                    <input
+                        type="text"
+                        id="allergen"
+                        name="allergen"
+                        value={plat.allergen}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="region">
+                        Région
+                    </label>
+                    <select
+                        id="region"
+                        name="region"
+                        value={plat.region}
+                        onChange={handleInputChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    >
+                        <option value="">Sélectionnez une région</option>
+                        {regions.map((region) => (
+                            <option key={region.id} value={region.id}>
+                                {region.Nom}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ingredients">
+                        Ingrédients
+                    </label>
+                    <select
+                        id="ingredients"
+                        name="ingredients"
+                        multiple
+                        value={plat.ingredients}
+                        onChange={handleIngredientsChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    >
+                        {ingredients.map((ingredient) => (
+                            <option key={ingredient.id} value={ingredient.id}>
+                                {ingredient.Nom}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" type="submit">
+                    Ajouter le plat
+                </button>
+            </form>
         </div>
-        <div className="mb-4">
-          <label htmlFor="description" className="block font-medium">Description</label>
-          <textarea id="description" name="description" value={platData.description} onChange={handleInputChange} className="w-full border rounded-md p-2"></textarea>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="prix_unit" className="block font-medium">Prix Unitaire</label>
-          <input type="number" id="prix_unit" name="prix_unit" value={platData.prix_unit} onChange={handleInputChange} className="w-full border rounded-md p-2" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="stock_qtt" className="block font-medium">Quantité en Stock</label>
-          <input type="number" id="stock_qtt" name="stock_qtt" value={platData.stock_qtt} onChange={handleInputChange} className="w-full border rounded-md p-2" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="allergen" className="block font-medium">Allergènes</label>
-          <select id="ingredients" name="ingredients" value={platData.ingredients} onChange={handleInputChange} className="w-full border rounded-md p-2">
-            {ingredientsList.map(ingredient => (
-              <option key={ingredient.id} value={ingredient.id}>{ingredient.nom}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="region" className="block font-medium">Région</label>
-          <select id="region" name="region" value={platData.region} onChange={handleInputChange} className="w-full border rounded-md p-2">
-            {regionsList.map(region => (
-              <option key={region.id} value={region.id}>{region.nom}</option>
-            ))}
-          </select>
-        </div>
-       
-        <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-          Ajouter
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
+
 export default AjouterPlat;
